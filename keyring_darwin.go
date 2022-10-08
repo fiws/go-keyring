@@ -65,13 +65,16 @@ func (k macOSXKeychain) Get(service, username string) (string, error) {
 
 // Set stores a secret in the keyring given a service name and a user.
 func (k macOSXKeychain) Set(service, username, password string) error {
+	fmt.Println("enabling mega debugging")
 	// if the added secret has multiple lines or some non ascii,
 	// osx will hex encode it on return. To avoid getting garbage, we
 	// encode all passwords
 	password = encodingPrefix + hex.EncodeToString([]byte(password))
+	fmt.Println("encoded")
 
 	cmd := exec.Command(execPathKeychain, "-i")
 	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	stdIn, err := cmd.StdinPipe()
 	if err != nil {
 		return err
@@ -81,16 +84,21 @@ func (k macOSXKeychain) Set(service, username, password string) error {
 		return err
 	}
 
+	fmt.Println("sending command to stdin")
 	command := fmt.Sprintf("add-generic-password -U -s %s -a %s -w %s\n", shellescape.Quote(service), shellescape.Quote(username), shellescape.Quote(password))
 	if _, err := io.WriteString(stdIn, command); err != nil {
 		return err
 	}
 
+	fmt.Println("closing stdin")
 	if err = stdIn.Close(); err != nil {
+		fmt.Println("catastrophic error")
 		return err
 	}
 
+	fmt.Println("waiting for command to finish")
 	err = cmd.Wait()
+	fmt.Println("command finished")
 	return err
 }
 
