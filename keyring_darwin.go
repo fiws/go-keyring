@@ -70,6 +70,7 @@ func (k macOSXKeychain) Set(service, username, password string) error {
 	password = encodingPrefix + hex.EncodeToString([]byte(password))
 
 	cmd := exec.Command(execPathKeychain, "-i")
+	cmd.Stdout = os.Stdout
 	stdIn, err := cmd.StdinPipe()
 	if err != nil {
 		return err
