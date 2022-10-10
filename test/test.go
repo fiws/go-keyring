@@ -8,18 +8,18 @@ import (
 
 func main() {
 
+	test(1024 * 1024)
+}
+
+func test(length int) {
 	serviceName := "go-keyring-test"
 
 	longString := "(\"\n💣\n\t{test}^💣💣@#';DROP TABLE"
-	for a := 0; a <= 2518; a++ {
+	for a := 0; a <= length; a++ {
 		longString += "a"
 	}
 	longString += "z"
 
-	length := len(longString)
-
-	fmt.Println("Trying to add password with:")
-	fmt.Println("Password length:", length)
 	err := keyring.Set(serviceName, "demo", longString)
 
 	fmt.Println("err", err)
@@ -31,9 +31,10 @@ func main() {
 	}
 
 	if value == longString {
-		fmt.Println("✅ Set password looks good")
+		fmt.Printf("✅ Test with %d characters passed", length)
 	} else {
-		fmt.Println("OH NO! Retrieved password is not the same as stored:")
-		fmt.Println("Value stored:", value)
+		fmt.Printf("❌ Test with %d characters failed, saved value was different", length)
 	}
+
+	keyring.Delete(serviceName, "demo")
 }
